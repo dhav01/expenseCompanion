@@ -1,0 +1,29 @@
+{
+  "name": "expensecompanion",
+  "version": "1.0.0",
+  "description": "A web app to solve all the expense tracking and management needs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhav01/expenseCompanion.git"
+  },
+  "keywords": [
+    "expense",
+    "management",
+    "trackingExpense"
+  ],
+  "author": "dhaval agrawal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dhav01/expenseCompanion/issues"
+  },
+  "homepage": "https://github.com/dhav01/expenseCompanion#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^6.0.5",
+    "nodemon": "^2.0.12"
+  }
+}
