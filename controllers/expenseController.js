@@ -1,15 +1,30 @@
-exports.getExpenses = (req, res, next) => {
+const Expense = require('../models/expenseModel')
+
+exports.getExpenses = async (req, res, next) => {
+  const expenses = await Expense.find()
   res.status(200).json({
     status: 'success',
-    message: 'You hit GET all expenses route',
+    expenses: {
+      expenses,
+    },
   })
 }
 
-exports.createExpenses = (req, res, next) => {
-  res.status(200).json({
-    status: 'success',
-    message: 'You hit POST create expenses route',
-  })
+exports.createExpenses = async (req, res, next) => {
+  try {
+    req.body.incurredOn = new Date().toISOString()
+    const expense = await Expense.create(req.body)
+
+    res.status(200).json({
+      status: 'success',
+      expense: expense,
+    })
+  } catch (error) {
+    res.status(400).json({
+      status: 'fail',
+      error: error.message,
+    })
+  }
 }
 
 exports.getExpense = (req, res, next) => {
@@ -17,5 +32,19 @@ exports.getExpense = (req, res, next) => {
   res.status(200).json({
     status: 'success',
     message: `You hit POST get expense route with id ${req.params.id}`,
+  })
+}
+
+exports.deleteExpense = (req, res, next) => {
+  res.status(204).json({
+    status: 'success',
+    message: 'Expense deleted successfully',
+  })
+}
+
+exports.updateExpense = (req, res, next) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Expense update successfully',
   })
 }

@@ -8,6 +8,10 @@ router
   .get(expenseController.getExpenses)
   .post(expenseController.createExpenses)
 
-router.route('/:id').post(expenseController.getExpense)
+router
+  .route('/:id')
+  .patch(expenseController.updateExpense)
+  .delete(expenseController.deleteExpense)
+  .get(expenseController.getExpense)
 
 module.exports = router
