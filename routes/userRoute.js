@@ -4,6 +4,9 @@ const authController = require('../controllers/authController')
 
 const router = express.Router()
 
-router.route('/').get(userController.getUsers).post(authController.createUser)
+router.route('/register').post(authController.createUser)
+router.route('/login').post(authController.loginUser)
+
+router.route('/').get(userController.getUsers)
 
 module.exports = router
