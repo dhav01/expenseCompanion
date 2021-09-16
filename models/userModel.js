@@ -53,6 +53,16 @@ userSchema.pre('save', async function (next) {
   next()
 })
 
+userSchema.pre('save', async function (next) {
+  //middleware to modify passwordChangedAt prop of user only when doc modified, not created
+  if (!this.isModified() || this.isNew) {
+    return next()
+  }
+
+  this.passwordChangedAt = Date.now() - 1000 //sometimes JWT is created before password is updated so setting change time 1sec less than actual
+  next()
+})
+
 userSchema.methods.checkPassword = async function (password, originalPassword) {
   return await bcrypt.compare(password, originalPassword)
 }

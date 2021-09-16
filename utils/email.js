@@ -5,10 +5,10 @@ const sendEmail = async (options) => {
   //1> create transporter
   let transport = nodemailer.createTransport({
     host: 'smtp.mailtrap.io',
-    port: 2525,
+    port: process.env.EMAIL_PORT,
     auth: {
-      user: '661b7898d49611',
-      pass: '6fadbbcee616ab',
+      user: process.env.EMAIL_USERNAME,
+      pass: process.env.EMAIL_PASSWORD,
     },
   })
 
