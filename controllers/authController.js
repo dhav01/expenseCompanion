@@ -79,5 +79,13 @@ exports.isUserLogged = catchAsync(async (req, res, next) => {
     )
   }
   //grant access to protected routes
+  req.user = user //passing the current user to next middleware
   next()
 })
+
+exports.isAdmin = (req, res, next) => {
+  if (!req.user.isAdmin) {
+    next(new appError('User not permitted to perform this action', 403))
+  }
+  next()
+}

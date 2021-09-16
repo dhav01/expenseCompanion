@@ -9,4 +9,12 @@ router.route('/login').post(authController.loginUser)
 
 router.route('/').get(authController.isUserLogged, userController.getUsers)
 
+router
+  .route('/:id')
+  .delete(
+    authController.isUserLogged,
+    authController.isAdmin,
+    userController.deleteUser
+  )
+
 module.exports = router
