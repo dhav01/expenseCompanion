@@ -34,6 +34,7 @@ const userSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  passwordChangedAt: Date,
 })
 
 userSchema.pre('save', async function (next) {
@@ -45,6 +46,18 @@ userSchema.pre('save', async function (next) {
 
 userSchema.methods.checkPassword = async function (password, originalPassword) {
   return await bcrypt.compare(password, originalPassword)
+}
+
+userSchema.methods.resetPassAfterToken = function (jwtTimeStamp) {
+  if (this.passwordChangedAt) {
+    const changedPasswordTime = parseInt(
+      this.passwordChanged.getTime() / 1000,
+      10
+    )
+
+    return jwtTimeStamp < changedPasswordTime // return true if password was changed after token was issued
+  }
+  return false
 }
 
 const User = mongoose.model('User', userSchema)

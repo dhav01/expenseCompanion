@@ -2,6 +2,7 @@ const express = require('express')
 const expenseRouter = require('./routes/expenseRoute')
 const userRouter = require('./routes/userRoute')
 const connectDB = require('./config/db')
+const appError = require('./utils/appError')
 const errorController = require('./controllers/errorController')
 
 const app = express()
@@ -15,20 +16,11 @@ app.use('/api/v1/expenses', expenseRouter)
 app.use('/api/v1/users', userRouter)
 
 app.all('*', (req, res, next) => {
-  next(new errorController(`${req.originalUrl} route not implemented yet`, 404))
+  next(new appError(`${req.originalUrl} route not implemented yet`, 404))
 })
 
 //error handler
-app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500
-  //   err.message = err.message || 'internal server error'
-  //   console.log('Something went wrong', err)
-  res.status(err.statusCode).json({
-    status: 'error',
-    error: err.message,
-    stack: err.stack,
-  })
-})
+app.use(errorController)
 
 app.listen(port, () => {
   console.log('Server started successfully!')

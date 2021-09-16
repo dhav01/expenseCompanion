@@ -1,11 +1,29 @@
-class errorController extends Error {
-  constructor(message, statusCode) {
-    super(message)
-    this.statusCode = statusCode
-    this.status = `${this.statusCode}`.startsWith('4') ? 'fail' : 'error'
-    this.isOperational = true
+const appError = require('../utils/appError')
 
-    Error.captureStackTrace(this, this.constructor)
-  }
+const handleJWTError = () => new appError('Invalid token. Please Log in Again.')
+
+const handleTokenExpiredError = () =>
+  new appError('Auth token expired. Please Login again.')
+
+const handleDuplicateFieldError = (err) => {
+  return new appError(
+    `User with ${err.keyValue.email} already exists. Please login`,
+    400
+  )
 }
-module.exports = errorController
+
+module.exports = (err, req, res, next) => {
+  if (err.name === 'JsonWebTokenError') err = handleJWTError()
+  if (err.name === 'TokenExpiredError') err = handleTokenExpiredError()
+  if (err.code === 11000) err = handleDuplicateFieldError(err)
+  console.log(err.keyValue)
+  err.statusCode = err.statusCode || 500
+  //   err.message = err.message || 'internal server error'
+  //   console.log('Something went wrong', err)
+  console.log('Error from errorController', err.stack)
+  res.status(err.statusCode).json({
+    status: 'error',
+    message: err.message,
+    error: err,
+  })
+}
