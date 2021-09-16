@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
@@ -35,12 +36,20 @@ const userSchema = mongoose.Schema({
     default: false,
   },
   passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordTokenExpires: Date,
 })
 
+//defining a middleware to encrypt user password in DB before saving it
 userSchema.pre('save', async function (next) {
-  this.password = await bcrypt.hash(this.password, 12)
-  this.confirmPassword = undefined
+  //only encrypt user password when created/updated; dont want to do it for any other changes
+  if (!this.isModified('password')) return next()
 
+  //encrypting the passwords
+  this.password = await bcrypt.hash(this.password, 12)
+
+  //deleting the confirm password property; dont want it in DB
+  this.confirmPassword = undefined
   next()
 })
 
@@ -58,6 +67,23 @@ userSchema.methods.resetPassAfterToken = function (jwtTimeStamp) {
     return jwtTimeStamp < changedPasswordTime // return true if password was changed after token was issued
   }
   return false
+}
+
+userSchema.methods.generatePasswordResetToken = function () {
+  const randomToken = crypto.randomBytes(32).toString('hex')
+
+  //encrypting the token and storing it in DB
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(randomToken)
+    .digest('hex')
+
+  console.log('generatedPassword:', { randomToken }, this.passwordResetToken) //{randomToken} will give randomToken: <value>
+
+  this.passwordTokenExpires = Date.now() + 10 * 60 * 1000 //password reset token only valid for 10 minutes
+
+  //sending the unencrypted token to user
+  return randomToken
 }
 
 const User = mongoose.model('User', userSchema)

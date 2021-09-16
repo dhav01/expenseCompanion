@@ -22,7 +22,6 @@ module.exports = (err, req, res, next) => {
   if (err.name === 'JsonWebTokenError') err = handleJWTError()
   if (err.name === 'TokenExpiredError') err = handleTokenExpiredError()
   if (err.code === 11000) err = handleDuplicateFieldError(err)
-  console.log(err.keyValue)
   err.statusCode = err.statusCode || 500
   //   err.message = err.message || 'internal server error'
   //   console.log('Something went wrong', err)
