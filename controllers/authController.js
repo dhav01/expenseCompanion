@@ -1,5 +1,6 @@
 const User = require('../models/userModel')
 const jwt = require('jsonwebtoken')
+const errorController = require('./errorController')
 
 const generateToken = (id) =>
   jwt.sign({ id: id }, process.env.JWT_SECRET, {
@@ -54,9 +55,37 @@ exports.loginUser = async (req, res, next) => {
       token: token,
     })
   } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      error: err.message,
-    })
+    next(err)
+  }
+}
+
+exports.isUserLogged = async (req, res, next) => {
+  try {
+    //getting token and checking if its there token: Bearer <token>
+    let token
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer ')
+    ) {
+      token = req.headers.authorization.split(' ')[1]
+    }
+    if (!token) {
+      next(new errorController('Please Login first to continue.', 401))
+    }
+    //token verification
+    const decode = await jwt.verify(token, process.env.JWT_SECRET)
+
+    //check if the user still exist in db
+    const user = await User.findById(decoded.id)
+    //check if password was updated after token was issued
+  } catch (err) {
+    if (err.message === 'jwt must be provided') {
+      err.status = 401
+      err.message = 'Auth token not found. Please try later.'
+    }
+    if (err.message === 'jwt malformed') {
+      err.status = 401
+    }
+    next(err)
   }
 }
