@@ -26,6 +26,7 @@ const userSchema = mongoose.Schema({
     required: [true, 'Please confirm the password to create the user'],
     validate: {
       validator: function (el) {
+        //only run for create and save
         return el === this.password
       },
       message: 'password and confirm password do not match',
@@ -70,7 +71,7 @@ userSchema.methods.checkPassword = async function (password, originalPassword) {
 userSchema.methods.resetPassAfterToken = function (jwtTimeStamp) {
   if (this.passwordChangedAt) {
     const changedPasswordTime = parseInt(
-      this.passwordChanged.getTime() / 1000,
+      this.passwordChangedAt.getTime() / 1000,
       10
     )
 

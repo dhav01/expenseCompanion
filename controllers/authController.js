@@ -10,6 +10,16 @@ const generateToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES,
   })
 
+const createAndSendToken = (user, statusCode, res) => {
+  const token = generateToken(user._id)
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    user: user,
+  })
+}
+
 exports.createUser = catchAsync(async (req, res, next) => {
   const user = await User.create({
     name: req.body.name,
@@ -18,14 +28,7 @@ exports.createUser = catchAsync(async (req, res, next) => {
     confirmPassword: req.body.confirmPassword,
     isAdmin: false,
   })
-
-  const token = generateToken(user._id)
-
-  res.status(200).json({
-    status: 'success',
-    token,
-    user: user,
-  })
+  createAndSendToken(user, 201, res)
 })
 
 exports.loginUser = catchAsync(async (req, res, next) => {
@@ -44,11 +47,7 @@ exports.loginUser = catchAsync(async (req, res, next) => {
     next(new appError('Incorrect Email or Password. Please retry again.', 401))
   }
 
-  const token = generateToken(user._id)
-  res.status(200).json({
-    status: 'success',
-    token: token,
-  })
+  createAndSendToken(user, 200, res)
 })
 
 exports.isUserLogged = catchAsync(async (req, res, next) => {
@@ -140,6 +139,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     .createHash('sha256')
     .update(req.params.token)
     .digest('hex')
+
   const user = await User.findOne({
     passwordResetToken: encryptedToken,
     passwordTokenExpires: { $gt: Date.now() },
@@ -159,10 +159,25 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   //update changedPasswordAt() prop of user (using pre 'save' middleware)
 
   //log the user in, send JWT
-  const token = generateToken(user._id)
-  res.status(200).json({
-    status: 'success',
-    token: token,
-    message: 'password reset successful',
-  })
+  createAndSendToken(user, 200, res)
+})
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  //get the user from collection
+  const user = await User.findById(req.user.id).select('+password') //in isLogged middleware, we pass user through req.user
+  //check if the POST password is correct
+  console.log('body:', req.body)
+
+  if (!(await user.checkPassword(req.body.currentPassword, user.password))) {
+    return next(new appError('Incorrect old password. Please try again', 400))
+  }
+
+  //if yes, update password
+  user.password = req.body.password
+  user.confirmPassword = req.body.confirmPassword
+
+  await user.save() //pre save middleware will handle remaining validation //findOneAndUpdate will not work because pre save middleware will not execute
+  console.log('password update successful')
+  //log the user in, send JWT
+  createAndSendToken(user, 200, res)
 })
