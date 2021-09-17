@@ -6,6 +6,8 @@ const appError = require('./utils/appError')
 const errorController = require('./controllers/errorController')
 const rateLimit = require('express-rate-limit')
 const helmet = require('helmet')
+const mongoSanitize = require('express-mongo-sanitize')
+const xssProtection = require('xss-clean')
 
 const app = express()
 const port = 3000
@@ -15,6 +17,12 @@ const port = 3000
 app.use(helmet()) //we need function call in app.use, not a func
 
 app.use(express.json({ limit: '10kb' })) //limiting the amount of data req.body will accept to 10kb
+
+//data sanitization against NoSQL query injection
+app.use(mongoSanitize())
+
+//data sanitization against XSS
+app.use(xssProtection())
 
 //rate limiter middleware
 const limiter = rateLimit({
