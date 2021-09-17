@@ -39,6 +39,11 @@ const userSchema = mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordTokenExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 })
 
 //defining a middleware to encrypt user password in DB before saving it
@@ -51,6 +56,14 @@ userSchema.pre('save', async function (next) {
 
   //deleting the confirm password property; dont want it in DB
   this.confirmPassword = undefined
+  next()
+})
+
+//query middleware to deactivate user account
+userSchema.pre(/^find/, function (next) {
+  //this middleware is executed before all the middleware when *find is fired
+  this.find({ active: { $ne: false } })
+
   next()
 })
 

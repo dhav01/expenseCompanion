@@ -13,6 +13,10 @@ router
   .patch(authController.isUserLogged, userController.updateCurrentUser)
 
 router
+  .route('/deleteCurrentUser')
+  .delete(authController.isUserLogged, userController.deleteCurrentUser)
+
+router
   .route('/getUser')
   .get(authController.isUserLogged, userController.getCurrentUser)
 

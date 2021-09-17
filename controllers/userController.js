@@ -81,9 +81,24 @@ const filterBodyObject = (obj, ...allowedFields) => {
   return dataToSend
 }
 
-exports.getUser = (req, res, next) => {
-  res.status(500).json({
+exports.getUser = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.id)
+  console.log('User info: ', user)
+  if (!user) {
+    return next(new appError('User not found', 404))
+  }
+
+  res.status(200).json({
     status: 'success',
-    message: 'route not implemented yet!',
+    message: user,
   })
-}
+})
+
+exports.deleteCurrentUser = catchAsync(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false })
+
+  res.status(204).json({
+    status: 'success',
+    data: null,
+  })
+})
