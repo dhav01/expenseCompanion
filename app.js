@@ -4,11 +4,22 @@ const userRouter = require('./routes/userRoute')
 const connectDB = require('./config/db')
 const appError = require('./utils/appError')
 const errorController = require('./controllers/errorController')
+const rateLimit = require('express-rate-limit')
 
 const app = express()
 const port = 3000
 
+//global middleware
 app.use(express.json())
+//rate limiter middleware
+
+const limiter = rateLimit({
+  max: 50,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please come back after 1 hour',
+}) //allowing max 50 request from each ip every hour; if exceeded, show message
+
+app.use('/api', limiter) // apply limiter when any API is hit
 
 //expense router
 app.use('/api/v1/expenses', expenseRouter)
