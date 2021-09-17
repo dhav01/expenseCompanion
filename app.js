@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit')
 const helmet = require('helmet')
 const mongoSanitize = require('express-mongo-sanitize')
 const xssProtection = require('xss-clean')
+const hpp = require('hpp')
 
 const app = express()
 const port = 3000
@@ -23,6 +24,9 @@ app.use(mongoSanitize())
 
 //data sanitization against XSS
 app.use(xssProtection())
+
+//preventing http parameter pollution
+app.use(hpp()) //hpp({whitelist: [fields]})  pass fields you wish to whitelist
 
 //rate limiter middleware
 const limiter = rateLimit({
