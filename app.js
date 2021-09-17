@@ -5,14 +5,18 @@ const connectDB = require('./config/db')
 const appError = require('./utils/appError')
 const errorController = require('./controllers/errorController')
 const rateLimit = require('express-rate-limit')
+const helmet = require('helmet')
 
 const app = express()
 const port = 3000
 
 //global middleware
-app.use(express.json())
-//rate limiter middleware
+//to set secure http headers
+app.use(helmet()) //we need function call in app.use, not a func
 
+app.use(express.json({ limit: '10kb' })) //limiting the amount of data req.body will accept to 10kb
+
+//rate limiter middleware
 const limiter = rateLimit({
   max: 50,
   windowMs: 60 * 60 * 1000,
